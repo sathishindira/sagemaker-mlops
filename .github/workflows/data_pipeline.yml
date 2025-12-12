@@ -1,0 +1,56 @@
+name: Data pipeline (ingest -> preprocess -> dvc push)
+
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: '0 * * * *'   # hourly ingest (example)
+
+jobs:
+  ingest_preprocess:
+    runs-on: ubuntu-latest
+    env:
+      DVC_REMOTE: ${{ secrets.S3_DVC_REMOTE }}
+      MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+    steps:
+    - uses: actions/checkout@v5
+    
+    - name: Setup python
+      uses: actions/setup-python@v6
+      with:
+        python-version: 3.13
+        
+    - name: Install deps
+      run: pip install -r requirements.txt dvc[s3]
+      
+    - name: Configure AWS
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+        
+    - name: dvc pull (ensure latest artifacts)
+      run: |
+        dvc remote add -f origin $DVC_REMOTE || true
+        dvc pull
+        
+    - name: Run ingestion
+      run: python src/ingest.py --out data/raw/
+      
+    - name: Run preprocessing
+      run: python src/preprocess.py --in data/raw/ --out data/processed/
+      
+    - name: dvc add processed data
+      run: |
+        dvc add data/processed
+        git add data/processed.dvc .gitignore
+        git commit -m "Data: updated processed snapshot [ci]" || echo "no changes"
+        
+    - name: dvc push
+      run: dvc push
+      
+    - name: Create dataset tag (optional)
+      run: |
+        DATA_TAG=$(date -u +%Y%m%dT%H%M%SZ)
+        git tag -a "data-${DATA_TAG}" -m "data snapshot ${DATA_TAG}" || true
+        git push --tags || true
