@@ -1,0 +1,49 @@
+name: Train + HPO + Register
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'data/**'        # run training when data changes
+      - 'src/**'
+      - 'params.yaml'
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    env:
+      MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+      MLFLOW_TRACKING_TOKEN: ${{ secrets.MLFLOW_TRACKING_TOKEN }}
+      DVC_REMOTE: ${{ secrets.S3_DVC_REMOTE }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup python
+      uses: actions/setup-python@v4
+      with: python-version: '3.10'
+    - name: Install deps
+      run: pip install -r requirements.txt dvc[s3] mlflow boto3 optuna
+    - name: Configure AWS
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+    - name: dvc pull for training data
+      run: |
+        dvc remote add -f origin $DVC_REMOTE || true
+        dvc pull
+    - name: Run HPO (Optuna) and training with MLflow tracking
+      run: |
+        # train.py should log params/metrics/artifacts to MLflow using MLFLOW_TRACKING_URI
+        python src/hpo_optuna.py --data-dir data/processed/ --mlflow-uri $MLFLOW_TRACKING_URI --trials 50
+    - name: Evaluate & register best model to MLflow Registry
+      run: |
+        python src/register_and_deploy.py --action register --mlflow-uri $MLFLOW_TRACKING_URI
+    - name: Optionally trigger deployment workflow
+      run: |
+        # repository_dispatch to trigger deploy.yml
+        curl -X POST -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          https://api.github.com/repos/${{ github.repository }}/dispatches \
+          -d '{"event_type":"model_registered"}'
