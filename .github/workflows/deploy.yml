@@ -1,9 +1,11 @@
 name: Deploy model to SageMaker
 
 on:
-  repository_dispatch:
-    types: [ model_registered ]
-  workflow_dispatch:
+  push:
+    branches: [ develop ]
+  # repository_dispatch:
+  #   types: [ model_registered ]
+  # workflow_dispatch:
 
 jobs:
   deploy:
@@ -13,18 +15,23 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       SAGEMAKER_ROLE_ARN: ${{ secrets.SAGEMAKER_ROLE_ARN }}
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with: python-version: 3.10
+    - uses: actions/checkout@v6.0.1
+
+    - name: Setup python
+      uses: actions/setup-python@v6.1.0
+      with: 
+        python-version: '3.13'
+
     - name: Install deps
       run: pip install -r requirements.txt mlflow boto3 sagemaker
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
+
+    #Connect AWS account with OIDC Provider
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v5.1.1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+        aws-region: us-east-1
+        role-to-assume: arn:aws:iam::805702559038:role/Github_Actions_EKS_Repo
+        
     - name: Deploy from MLflow Registry to SageMaker
       run: |
         python src/register_and_deploy.py --action deploy \

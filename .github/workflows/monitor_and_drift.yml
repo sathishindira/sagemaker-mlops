@@ -1,9 +1,11 @@
 name: Monitor production + Data/Model drift
 
 on:
-  schedule:
-    - cron: '*/30 * * * *'  # run every 30 minutes (example)
-  workflow_dispatch:
+  push:
+    branches: [ develop ]
+  # schedule:
+  #   - cron: '*/30 * * * *'  # run every 30 minutes (example)
+  # workflow_dispatch:
 
 jobs:
   check_drift:
@@ -13,18 +15,24 @@ jobs:
       DVC_REMOTE: ${{ secrets.S3_DVC_REMOTE }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6.0.1
+
     - name: Setup python
-      uses: actions/setup-python@v4
-      with: python-version: 3.10
+      uses: actions/setup-python@v6.1.0
+      with: 
+        python-version: '3.13'
+
     - name: Install deps
       run: pip install -r requirements.txt evidently mlflow boto3
+
     - name: Fetch recent production data sample (from S3 / DB)
       run: |
         python src/drift_check.py --mode sample --out /tmp/prod_sample.parquet
+
     - name: Run drift checks
       run: |
         python src/drift_check.py --prod /tmp/prod_sample.parquet --train data/processed/ --report out/report.json
+        
     - name: Post results & trigger retrain if needed
       run: |
         python src/drift_check.py --post-report out/report.json \
