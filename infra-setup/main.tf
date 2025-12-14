@@ -23,9 +23,9 @@ resource "aws_vpc" "mlops" {
 }
 
 resource "aws_subnet" "public" {
-    count = length(data.aws_availability_zones.available)
+    count = 2
     vpc_id = aws_vpc.mlops.id
-    cidr_block = cidrsubnet(var.vpc_cidr,8,count.index)
+    cidr_block = cidrsubnet(var.vpc_cidr,8,count.index+1)
     map_public_ip_on_launch = true
     tags = merge(
         var.tags,
@@ -36,9 +36,9 @@ resource "aws_subnet" "public" {
 }
 
 resource "aws_subnet" "private" {
-    count = length(data.aws_availability_zones.available)
+    count = 2
     vpc_id = aws_vpc.mlops.id
-    cidr_block = cidrsubnet(var.vpc_cidr,8,count.index + 100)
+    cidr_block = cidrsubnet(var.vpc_cidr,8,count.index + 101)
     map_public_ip_on_launch = false
     tags = merge(
         var.tags,
@@ -50,6 +50,10 @@ resource "aws_subnet" "private" {
 
 resource "aws_route_table" "public" {
     vpc_id = aws_vpc.mlops.id
+    route {
+        cidr_block     = "0.0.0.0/0"
+        nat_gateway_id = aws_internet_gateway.mlops.id
+    }
     tags = merge(
         var.tags,
         {
@@ -60,6 +64,10 @@ resource "aws_route_table" "public" {
 
 resource "aws_route_table" "private" {
     vpc_id = aws_vpc.mlops.id
+    route {
+        cidr_block     = "0.0.0.0/0"
+        nat_gateway_id = aws_nat_gateway.main[count.index].id
+    }
     tags = merge(
         var.tags,
         {
@@ -78,4 +86,43 @@ resource "aws_route_table_association" "private" {
     count = length(aws_subnet.private)
     subnet_id      = aws_subnet.private[count.index].id
     route_table_id = aws_route_table.private.id
+}
+
+resource "aws_internet_gateway" "mlops" {
+    vpc_id = aws_vpc.mlops.id
+    tags = merge(
+        var.tags,
+        {
+            Name = "${var.name}-igw-01"
+        }
+        
+    )
+}
+resource "aws_internet_gateway_attachment" "mlops" {
+  internet_gateway_id = aws_internet_gateway.mlops.id
+  vpc_id              = aws_vpc.mlops.id
+}
+
+resource "aws_eip" "nat" {
+  count  = 2
+  domain = "vpc"
+
+  tags = merge(
+    var.tags,
+    {
+        
+        Name = "${var.name}-nat-${count.index + 1}"
+    })
+}
+resource "aws_nat_gateway" "main" {
+  count = 2
+
+  allocation_id = aws_eip.nat[count.index].id
+  subnet_id     = aws_subnet.public[count.index].id
+
+  tags = {
+    Name = "${var.name}-nat-${count.index + 1}"
+  }
+
+  depends_on = [aws_internet_gateway.main]
 }
