@@ -63,6 +63,7 @@ resource "aws_route_table" "public" {
 }
 
 resource "aws_route_table" "private" {
+    count = 2
     vpc_id = aws_vpc.mlops.id
     route {
         cidr_block     = "0.0.0.0/0"
