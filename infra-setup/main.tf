@@ -30,7 +30,7 @@ resource "aws_subnet" "public" {
     tags = merge(
         var.tags,
         {
-            name = "${var.name}-Public-Subnet-${count.index}"
+            Name = "${var.name}-Public-Subnet-${count.index}"
         }
     )
 }
@@ -43,7 +43,7 @@ resource "aws_subnet" "private" {
     tags = merge(
         var.tags,
         {
-            name = "${var.name}-Private-Subnet-${count.index}"
+            Name = "${var.name}-Private-Subnet-${count.index}"
         }
     )
 }
@@ -53,7 +53,7 @@ resource "aws_route_table" "public" {
     tags = merge(
         var.tags,
         {
-            name = "${var.name}-Public-RT"
+            Name = "${var.name}-Public-RT"
         }
     )
 }
@@ -63,7 +63,7 @@ resource "aws_route_table" "private" {
     tags = merge(
         var.tags,
         {
-            name = "${var.name}-Public-RT"
+            Name = "${var.name}-Private-RT"
         }
     )
 }
@@ -76,6 +76,6 @@ resource "aws_route_table_association" "public" {
 
 resource "aws_route_table_association" "private" {
     count = length(aws_subnet.private)
-    subnet_id      = aws_subnet.public[count.index].id
+    subnet_id      = aws_subnet.private[count.index].id
     route_table_id = aws_route_table.private.id
 }
