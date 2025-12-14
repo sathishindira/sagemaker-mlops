@@ -72,7 +72,7 @@ resource "aws_route_table" "private" {
     tags = merge(
         var.tags,
         {
-            Name = "${var.name}-Private-RT"
+            Name = "${var.name}-Private-RT-${count.index}"
         }
     )
 }
@@ -86,7 +86,7 @@ resource "aws_route_table_association" "public" {
 resource "aws_route_table_association" "private" {
     count = length(aws_subnet.private)
     subnet_id      = aws_subnet.private[count.index].id
-    route_table_id = aws_route_table.private.id
+    route_table_id = aws_route_table.private[count.index].id
 }
 
 resource "aws_internet_gateway" "mlops" {
