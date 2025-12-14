@@ -66,7 +66,7 @@ resource "aws_route_table" "private" {
     vpc_id = aws_vpc.mlops.id
     route {
         cidr_block     = "0.0.0.0/0"
-        nat_gateway_id = aws_nat_gateway.main[count.index].id
+        nat_gateway_id = aws_nat_gateway.mlops[count.index].id
     }
     tags = merge(
         var.tags,
@@ -114,7 +114,7 @@ resource "aws_eip" "nat" {
         Name = "${var.name}-nat-${count.index + 1}"
     })
 }
-resource "aws_nat_gateway" "main" {
+resource "aws_nat_gateway" "mlops" {
   count = 2
 
   allocation_id = aws_eip.nat[count.index].id
@@ -124,5 +124,5 @@ resource "aws_nat_gateway" "main" {
     Name = "${var.name}-nat-${count.index + 1}"
   }
 
-  depends_on = [aws_internet_gateway.main]
+  depends_on = [aws_internet_gateway.mlops]
 }
