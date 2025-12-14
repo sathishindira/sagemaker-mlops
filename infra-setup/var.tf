@@ -1,5 +1,5 @@
 variable "bucket_name" {
-    default = "sagemaker=mlops-sathish-01"
+    default = "sagemaker-mlops-sathish-01"
     type = string
 }
 
