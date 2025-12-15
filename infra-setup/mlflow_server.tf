@@ -82,7 +82,7 @@ resource "aws_launch_template" "mlflow" {
     User=ec2-user
     WorkingDirectory=/home/ec2-user
     Environment=AWS_REGION=ap-south-1
-    Environment=MLFLOW_BACKEND_STORE_URI="postgresql://mlflow:${var.db_password}@mlflow-db.${data.aws_caller_identity.current}.us-east-1.rds.amazonaws.com:5432/mlflow-db"
+    Environment=MLFLOW_BACKEND_STORE_URI="postgresql://mlflow:${var.db_password}@mlflow-db.${data.aws_caller_identity.current.account_id}.us-east-1.rds.amazonaws.com:5432/mlflow-db"
     Environment=MLFLOW_DEFAULT_ARTIFACT_ROOT="s3://${aws_s3_bucket.mlflow.bucket}/artifacts"
     ExecStart=/usr/local/bin/mlflow server \
       --host 0.0.0.0 \
