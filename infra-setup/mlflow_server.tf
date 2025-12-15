@@ -1,6 +1,6 @@
 resource "aws_key_pair" "generated_key" {
   key_name   = "my-terraform-key"
-  public_key = file("ssh-key.pub")
+  public_key = file("../ssh-key.pub")
 }
 resource "aws_security_group" "mlflow" {
   name   = "mlflow-tracking-sg"
