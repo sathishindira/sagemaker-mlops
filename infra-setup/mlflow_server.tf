@@ -77,5 +77,41 @@ resource "aws_launch_template" "mlflow" {
 
   }
 
-  user_data = filebase64("${path.module}/example.sh")
+  user_data = base64encode(<<-EOF
+    #!/bin/bash
+    set -e
+
+    dnf update -y
+    dnf install -y python3 pip postgresql
+
+    pip3 install mlflow gunicorn psycopg2-binary boto3
+
+    cat <<EOF >/etc/systemd/system/mlflow.service
+    [Unit]
+    Description=MLflow Tracking Server
+    After=network.target
+
+    [Service]
+    User=ec2-user
+    WorkingDirectory=/home/ec2-user
+    Environment=AWS_REGION=ap-south-1
+    Environment=MLFLOW_DEFAULT_ARTIFACT_ROOT="s3://${aws_s3_bucket.mlflow.bucket}/artifacts"
+    ExecStart=/usr/local/bin/mlflow server \
+      --host 0.0.0.0 \
+      --port 5000 \
+      --backend-store-uri \${MLFLOW_BACKEND_STORE_URI} \
+      --default-artifact-root \${MLFLOW_DEFAULT_ARTIFACT_ROOT}
+
+    Restart=always
+    RestartSec=10
+
+    [Install]
+    WantedBy=multi-user.target
+
+    systemctl daemon-reload
+    systemctl enable mlflow
+    systemctl start mlflow
+
+  EOF
+  )
 }
