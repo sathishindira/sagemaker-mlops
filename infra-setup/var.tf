@@ -28,3 +28,8 @@ variable "name" {
   default = "MLops"
   type = string
 }
+
+variable "db_password" {
+  default = "Hello@2024"
+  sensitive = true
+}

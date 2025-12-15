@@ -39,7 +39,7 @@ resource "aws_iam_policy" "mlflow_policy" {
         "Action": [
             "rds-db:connect"
         ],
-        "Resource": "arn:aws:rds-db:us-east-1:${data.aws_caller_identity.current.account_id}:dbuser:*/mlflow"
+        "Resource": "arn:aws:rds-db:us-east-1:${data.aws_caller_identity.current.account_id}:mlflow:*/mlflow-db"
     },
     {
         "Effect": "Allow",

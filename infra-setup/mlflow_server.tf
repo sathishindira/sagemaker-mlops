@@ -82,6 +82,7 @@ resource "aws_launch_template" "mlflow" {
     User=ec2-user
     WorkingDirectory=/home/ec2-user
     Environment=AWS_REGION=ap-south-1
+    Environment=MLFLOW_BACKEND_STORE_URI="postgresql://mlflow:${var.db_password}@mlflow-db.${data.aws_caller_identity.current}.us-east-1.rds.amazonaws.com:5432/mlflow-db"
     Environment=MLFLOW_DEFAULT_ARTIFACT_ROOT="s3://${aws_s3_bucket.mlflow.bucket}/artifacts"
     ExecStart=/usr/local/bin/mlflow server \
       --host 0.0.0.0 \
@@ -101,4 +102,60 @@ resource "aws_launch_template" "mlflow" {
 
   EOF
   )
+}
+
+resource "aws_db_instance" "mlflow" {
+  identifier = "mlflow-db"
+
+  engine         = "postgres"
+  engine_version = "15"
+
+  instance_class = "db.t4g.micro"
+
+  allocated_storage     = 20
+  max_allocated_storage = 50
+  storage_type          = "gp3"
+
+  db_name  = "mlflow"
+  username = "mlflow"
+  password = var.db_password
+
+  backup_retention_period = 7
+
+  skip_final_snapshot     = true
+
+  publicly_accessible = false
+
+  vpc_security_group_ids = [aws_security_group.rds.id]
+
+  db_subnet_group_name   = aws_db_subnet_group.default.name
+}
+
+resource "aws_security_group" "rds" {
+  name   = "mlflow-tracking-rds-sg"
+  vpc_id = aws_vpc.mlops.id
+  ingress {
+    description     = "Postgres from MLflow EC2"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.mlflow.id]
+  }
+
+  egress {
+    description = "Outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_db_subnet_group" "default" {
+  name       = "mlflow-metadata"
+  subnet_ids = aws_subnet.private[*].id
+
+  tags = {
+    Name = "mlflow-db-subnet-group"
+  }
 }
