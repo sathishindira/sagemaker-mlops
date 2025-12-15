@@ -1,20 +1,7 @@
-# RSA key of size 4096 bits
-resource "tls_private_key" "ssh-key" {
-  algorithm = "RSA"
-  rsa_bits  = 4096
-}
-
 resource "aws_key_pair" "generated_key" {
   key_name   = "my-terraform-key"
-  public_key = tls_private_key.ssh-key.public_key_openssh
+  public_key = file("ssh-key.pub")
 }
-
-resource "local_sensitive_file" "private_key" {
-  content         = tls_private_key.ssh-key.private_key_pem
-  filename        = "${path.module}/mlflow-server.pem"
-  file_permission = "0600"
-}
-
 resource "aws_security_group" "mlflow" {
   name   = "mlflow-tracking-sg"
   vpc_id = aws_vpc.mlops.id
