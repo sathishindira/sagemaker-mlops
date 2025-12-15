@@ -1,5 +1,10 @@
-variable "bucket_name" {
+variable "mlops_bucket_name" {
     default = "sagemaker-mlops-sathish-01"
+    type = string
+}
+
+variable "mlflow_bucket_name" {
+    default = "sagemaker-mlflow-sathish-01"
     type = string
 }
 

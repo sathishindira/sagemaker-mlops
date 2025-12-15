@@ -1,10 +1,22 @@
 resource "aws_s3_bucket" "mlops" {
-  bucket = var.bucket_name
+  bucket = var.mlops_bucket_name
   tags = var.tags
 }
 
 resource "aws_s3_bucket_versioning" "mlops"{
     bucket = aws_s3_bucket.mlops.id
+    versioning_configuration {
+        status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket" "mlflow" {
+  bucket = var.mlflow_bucket_name
+  tags = var.tags
+}
+
+resource "aws_s3_bucket_versioning" "mlflow"{
+    bucket = aws_s3_bucket.mlflow.id
     versioning_configuration {
         status = "Enabled"
   }
