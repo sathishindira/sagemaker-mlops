@@ -15,7 +15,7 @@ resource "aws_iam_role" "instance" {
   assume_role_policy = data.aws_iam_policy_document.instance_assume_role_policy.json
 }
 
-resource "aws_iam_policy" "policy" {
+resource "aws_iam_policy" "mlflow_policy" {
   name        = "MLflowTrackingServerRole_policy"
   path        = "/"
   description = "MLflowTrackingServerRole policy to connect from ec2 to s3 and cloudwatch logs"
@@ -55,6 +55,12 @@ resource "aws_iam_policy" "policy" {
   })
 }
 
+resource "aws_iam_policy_attachment" "test-attach" {
+  name       = "mlflow-policy-attachment"
+  roles      = [aws_iam_role.instance.name]
+  policy_arn = aws_iam_policy.mlflow_policy.arn
+}
+
 
 ####Sagemaker Exection Role
 data "aws_iam_policy_document" "Sagemaker_assume_role_policy" {
@@ -68,13 +74,13 @@ data "aws_iam_policy_document" "Sagemaker_assume_role_policy" {
   }
 }
 
-resource "aws_iam_role" "instance" {
+resource "aws_iam_role" "sagemaker" {
   name               = "SageMakerExecutionRole"
   path               = "/"
   assume_role_policy = data.aws_iam_policy_document.sagemaker_assume_role_policy.json
 }
 
-resource "aws_iam_policy" "policy" {
+resource "aws_iam_policy" "sagemaker_policy" {
   name        = "SageMakerExecutionRole_policy"
   path        = "/"
   description = "SageMakerExecutionRole for training and model inferencing"
@@ -116,4 +122,10 @@ resource "aws_iam_policy" "policy" {
 
     ]
   })
+}
+
+resource "aws_iam_policy_attachment" "sagemaker-attach" {
+  name       = "sagemaker-policy-attachment"
+  roles      = [aws_iam_role.sagemaker.name]
+  policy_arn = aws_iam_policy.sagemaker_policy.arn
 }
