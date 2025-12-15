@@ -55,7 +55,7 @@ resource "aws_iam_policy" "mlflow_policy" {
   })
 }
 
-resource "aws_iam_policy_attachment" "test-attach" {
+resource "aws_iam_policy_attachment" "instance-attach" {
   name       = "mlflow-policy-attachment"
   roles      = [aws_iam_role.instance.name]
   policy_arn = aws_iam_policy.mlflow_policy.arn
@@ -63,7 +63,7 @@ resource "aws_iam_policy_attachment" "test-attach" {
 
 
 ####Sagemaker Exection Role
-data "aws_iam_policy_document" "Sagemaker_assume_role_policy" {
+data "aws_iam_policy_document" "sagemaker_assume_role_policy" {
   statement {
     actions = ["sts:AssumeRole"]
 
