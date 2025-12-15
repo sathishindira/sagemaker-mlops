@@ -61,6 +61,11 @@ resource "aws_iam_policy_attachment" "instance-attach" {
   policy_arn = aws_iam_policy.mlflow_policy.arn
 }
 
+resource "aws_iam_instance_profile" "mlflow" {
+    name = "mlflow-trackking-service-instance-role"
+    role = aws_iam_role.instance.name
+  
+}
 
 ####Sagemaker Exection Role
 data "aws_iam_policy_document" "sagemaker_assume_role_policy" {
