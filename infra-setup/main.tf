@@ -52,7 +52,7 @@ resource "aws_route_table" "public" {
     vpc_id = aws_vpc.mlops.id
     route {
         cidr_block     = "0.0.0.0/0"
-        nat_gateway_id = aws_internet_gateway.mlops.id
+        gateway_id = aws_internet_gateway.mlops.id
     }
     tags = merge(
         var.tags,
@@ -98,10 +98,6 @@ resource "aws_internet_gateway" "mlops" {
         }
         
     )
-}
-resource "aws_internet_gateway_attachment" "mlops" {
-  internet_gateway_id = aws_internet_gateway.mlops.id
-  vpc_id              = aws_vpc.mlops.id
 }
 
 resource "aws_eip" "nat" {
