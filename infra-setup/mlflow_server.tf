@@ -120,8 +120,6 @@ resource "aws_db_instance" "mlflow" {
   username = "mlflow"
   password = var.db_password
 
-  backup_retention_period = 7
-
   skip_final_snapshot     = true
 
   publicly_accessible = false
