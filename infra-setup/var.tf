@@ -30,6 +30,6 @@ variable "name" {
 }
 
 variable "db_password" {
-  default = "Hello@2024"
+  default = "Hello2024"
   sensitive = true
 }
