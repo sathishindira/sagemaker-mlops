@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'pre-processing/**'
+      - 'requirements.txt'
 
   workflow_dispatch:
   # schedule:
