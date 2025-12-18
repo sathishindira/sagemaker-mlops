@@ -29,8 +29,6 @@ def main():
     )
 
     sklearn_processor.run(
-        name="PreprocessStep",
-        processor=sklearn_processor,
         inputs=[
             ProcessingInput(source=input_s3_uri, destination="/opt/ml/processing/input")
         ],
