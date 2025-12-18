@@ -1,4 +1,4 @@
 boto3
-sagemaker
+sagemaker==2.254.1
 pandas
 scikit-learn
