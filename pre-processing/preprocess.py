@@ -36,7 +36,7 @@ def main():
             ProcessingOutput(output_name="train", source="/opt/ml/processing/output/train"),
             ProcessingOutput(output_name="test", source="/opt/ml/processing/output/test")
         ],
-        code="./src/preprocess.py",
+        code="src/preprocess.py"
         wait=True,
         logs=True
     )
