@@ -2,14 +2,17 @@ name: Data pipeline (ingest -> preprocess -> dvc push)
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ main ]
+    paths:
+      - 'pre-processing/**'
+
   workflow_dispatch:
   # schedule:
   #   - cron: '0 * * * *'   # hourly ingest (example)
 permissions:
   contents: read
   id-token: write
-  
+
 jobs:
   ingest_preprocess:
     runs-on: ubuntu-latest
