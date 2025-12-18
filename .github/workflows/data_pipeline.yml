@@ -18,7 +18,7 @@ jobs:
   ingest_preprocess:
     runs-on: ubuntu-latest
     env:
-      DVC_REMOTE: ${{ secrets.S3_DVC_REMOTE }}
+      s3: ${{ secrets.S3_DVC_REMOTE }}
     steps:
     
     - uses: actions/checkout@v6.0.1
@@ -44,25 +44,6 @@ jobs:
     - name: Install deps
       run: pip install -r requirements.txt
         
-    - name: dvc pull (ensure latest artifacts)
-      run: |
-        dvc remote add -f origin $DVC_REMOTE || true
-        dvc pull
-             
-    # - name: Run preprocessing
-    #   run: python src/preprocess.py --input data/raw/ --output data/processed/
+    - name: Run preprocessing
+      run: python pre-processing/preprocess.py
       
-    # - name: dvc add processed data
-    #   run: |
-    #     dvc add data/processed
-    #     git add data/processed.dvc .gitignore
-    #     git commit -m "Data: updated processed snapshot [ci]" || echo "no changes"
-        
-    # - name: dvc push
-    #   run: dvc push
-      
-    # - name: Create dataset tag (optional)
-    #   run: |
-    #     DATA_TAG=$(date -u +%Y%m%dT%H%M%SZ)
-    #     git tag -a "data-${DATA_TAG}" -m "data snapshot ${DATA_TAG}" || true
-    #     git push --tags || true

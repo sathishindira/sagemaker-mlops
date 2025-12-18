@@ -1,3 +1,4 @@
-pandas
 boto3
-dvc[s3]
+sagemaker
+pandas
+scikit-learn
