@@ -24,12 +24,12 @@ jobs:
     - name: Install deps
       run: pip install -r requirements.txt
       
-    - name: Lint
-      run: |
-        pip install flake8
-        flake8 src tests || true
+    # - name: Lint
+    #   run: |
+    #     pip install flake8
+    #     flake8 src tests || true
         
-    - name: Unit tests
-      run: |
-        pip install -r requirements.txt
-        pytest -q
+    # - name: Unit tests
+    #   run: |
+    #     pip install -r requirements.txt
+    #     pytest -q

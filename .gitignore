@@ -419,3 +419,8 @@ FodyWeavers.xsd
 
 #ssh key files
 ssh-key
+
+
+#Virtual Environment
+.venv
+venv
