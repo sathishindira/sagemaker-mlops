@@ -28,7 +28,7 @@ def main():
         sagemaker_session=sagemaker_session,
     )
 
-    processing_step = ProcessingStep(
+    sklearn_processor.run(
         name="PreprocessStep",
         processor=sklearn_processor,
         inputs=[
@@ -39,6 +39,8 @@ def main():
             ProcessingOutput(output_name="test", source="/opt/ml/processing/output/test")
         ],
         code="../src/preprocess.py",
+        wait=True,
+        logs=True
     )
 
 if __name__ == "__main__":
