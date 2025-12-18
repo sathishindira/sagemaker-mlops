@@ -6,7 +6,10 @@ on:
   workflow_dispatch:
   # schedule:
   #   - cron: '0 * * * *'   # hourly ingest (example)
-
+permissions:
+  contents: read
+  id-token: write
+  
 jobs:
   ingest_preprocess:
     runs-on: ubuntu-latest
