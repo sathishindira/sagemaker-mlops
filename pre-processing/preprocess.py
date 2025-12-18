@@ -1,8 +1,6 @@
 import pandas as pd
 from sagemaker.sklearn.processing import SKLearnProcessor
 from sagemaker.processing import ProcessingInput, ProcessingOutput
-from sagemaker.workflow.steps import ProcessingStep
-from sagemaker.workflow.parameters import ParameterString, ParameterInteger
 import boto3
 import sagemaker
 
@@ -12,11 +10,9 @@ role = 'arn:aws:iam::805702559038:role/Sagemaker_Exec'
 
 def main():
     sagemaker_session = sagemaker.session.Session(boto_session=boto3.Session(region_name=region))
-    sm_client = sagemaker_session.sagemaker_client
 
     # Pipeline parameters
-    input_s3_uri = ParameterString(name="InputDataS3Uri", default_value=f"s3://{bucket}/churn.txt")
-    processing_instance_count = ParameterInteger(name="ProcessingInstanceCount", default_value=1)
+    input_s3_uri = f"s3://{bucket}/churn.txt"
 
     # SKLearn processor (uses sagemaker sklearn image)
     sklearn_processor = SKLearnProcessor(
